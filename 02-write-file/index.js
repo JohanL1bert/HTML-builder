@@ -14,12 +14,12 @@ readLineText.on('SIGINT', () => {
 });
 
 const writeFileAnswer = (data) => {
-  fs.appendFile('newFile.txt', `${data + '\n'}`, (err) => {
+  fs.appendFile(`${pathToFolder}`, `${data + '\n'}`, (err) => {
     if(err) throw err;
   });
 };
 
-const pathToFolder = path.join(__dirname, './newFile.txt'); 
+const pathToFolder = path.join(__dirname, 'newFile.txt'); 
 fs.open(pathToFolder, 'w', (err) => {
   if (err) throw err;
   const createQuestion = () => {
