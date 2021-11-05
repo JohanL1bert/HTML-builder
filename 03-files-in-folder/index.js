@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { stdout } = process;
 
-const pathToFolder = path.join(__dirname, '/secret-folder');
+const pathToFolder = path.join(__dirname, 'secret-folder');
 
 fs.readdir(pathToFolder, {withFileTypes: true}, (err, files) => {
   if(err){
