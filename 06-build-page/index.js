@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { stdout } = process;
-const { readdir, appendFile, readFile, stat, copyFile } = require('fs/promises');
+const { readdir, appendFile, readFile, stat, copyFile} = require('fs/promises');
 
 const pathDist = path.join(__dirname, 'project-dist');
 const styleFolder = path.join(__dirname, 'styles');
@@ -29,23 +29,7 @@ const createFile = () => {
   });
 };
 
-const readFiles = async(createPathFile) => {
-  try {
-    const data1 = await readFile(createPathFile, 'utf-8');
-    return data1;
-  } catch(err) {
-    stdout.write(err);
-  }
-};
- 
-const writeFileAnswer = async(data) => {
-  try {
-    const pathStyle = path.join(pathDist, 'style.css');
-    await appendFile(pathStyle, data);
-  } catch(err) {
-    stdout.write(err);
-  }
-};
+createFile();
 
 const clearFileExt = async(data) => {
   try {
@@ -61,28 +45,21 @@ const clearFileExt = async(data) => {
   } catch (err) {
     stdout.write(err);
   }
-
-
 };
 
 const styleCollector = async() => {
   try {
     const files = await readdir(styleFolder, { withFileTypes: true });
-    files.map(fileName => {
-      fs.stat(path.join(styleFolder, fileName.name), (err) => {
-        if (err) throw err;
-        const fileData = path.parse(fileName.name);
-        const fileExt = fileData.ext;
-        if (fileExt.slice(1) === 'css') {
-          createFile();
-          const createPathFile = path.join(__dirname, 'styles', fileName.name);
-          const getData = readFiles(createPathFile);
-          getData.then((fileBundle) => {
-            writeFileAnswer(fileBundle);
-          });
-        }
-      });
-    });
+    for (const fileName of files) {
+      const fileData = path.parse(fileName.name);
+      const fileExt = fileData.ext;
+      if (fileExt.slice(1) === 'css') {
+        const createPathFile = path.join(styleFolder, fileName.name);
+        const getData = await readFile(createPathFile, 'utf-8');
+        const createCSS = path.join(pathDist, 'style.css');
+        await appendFile(createCSS, getData);
+      }
+    }
   } catch (err) {
     stdout.write(err);
   }
@@ -91,25 +68,23 @@ const styleCollector = async() => {
 const htmlBunde = async() => {
   try {
     let readHTML = await readFile(readTemplate, 'utf-8');
-    /*const createRegex = readHTML.match(/{{\w+}}/g); */
     const readAllTemplates = await readdir(components);
     const cleanArray = await clearFileExt(readAllTemplates);
-    const lenOfTemp = cleanArray.length - 1;
-    cleanArray.map(async(data, index) => {
-      let getTemplate;
-      const createPath = path.join(components, data);
-      const sliceVariable = new RegExp(`{{${data.slice(0, -5)}}}`);
-      const createRegex = readHTML.match(sliceVariable);
-      if (createRegex[0].includes(data.slice(0, -5))) {
+    const result = await Promise.all(cleanArray.map(async(data) => {
+      try {
+        let getTemplate;
+        const createPath = path.join(components, data);
+        const sliceVariable = new RegExp(`{{${data.slice(0, -5)}}}`);
+        const createRegex = readHTML.match(sliceVariable);
         getTemplate = await readFile(createPath, 'utf-8');
         readHTML = readHTML.replace(createRegex[0], getTemplate);
-      } 
-      if (index == lenOfTemp) {
-        const pathHTML = path.join(pathDist, 'index.html');
-        appendFile(pathHTML, readHTML);
-      }     
-    });
-    
+        return readHTML;
+      } catch (err) {
+        stdout.write(err);
+      }
+    }));
+    const pathHTML = path.join(pathDist, 'index.html');
+    appendFile(pathHTML, result[result.length - 1]);
   } catch(err) {
     stdout.write(err);
   }
