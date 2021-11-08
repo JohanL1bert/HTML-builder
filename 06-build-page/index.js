@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { stdout } = process;
-const { readdir, appendFile, readFile, stat, copyFile} = require('fs/promises');
+const { readdir, appendFile, readFile, stat, copyFile, rm, mkdir} = require('fs/promises');
 
 const pathDist = path.join(__dirname, 'project-dist');
 const styleFolder = path.join(__dirname, 'styles');
@@ -10,16 +10,17 @@ const components = path.join(__dirname, 'components');
 const readTemplate = path.join(__dirname, 'template.html');
 const newAssetsFolder = path.join(pathDist, 'assets');
 
-fs.mkdir((pathDist), { recursive: true }, (err) => {
-  if (err) throw err;
-});
+const createFolder = async() => {
+  await mkdir((pathDist), { recursive: true});
+  await mkdir((newAssetsFolder), { recursive: true });
+};
 
-fs.mkdir((newAssetsFolder), { recursive: true }, (err) => {
-  if (err) throw err;
-});
+const deleteFolder = async() => {
+  const folder = path.join(pathDist, 'assets');
+  await rm(folder, { recursive: true, force: true});
+};
 
-
-const createFile = () => {
+const createFile = async() => {
   fs.open(path.join(pathDist, 'style.css'), 'w', (err) => {
     if (err) throw err;
   });
@@ -28,8 +29,6 @@ const createFile = () => {
     if (err) throw err;
   });
 };
-
-createFile();
 
 const clearFileExt = async(data) => {
   try {
@@ -122,7 +121,14 @@ const assetsCopy = async() => {
   }
 };
 
+const fun = async() => {
+  await createFolder();
+  await deleteFolder();
+  await createFolder();
+  await createFile();
+  await styleCollector();
+  await htmlBunde();
+  await assetsCopy();
+};
 
-styleCollector();
-htmlBunde();
-assetsCopy();
+fun();
