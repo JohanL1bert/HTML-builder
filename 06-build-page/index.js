@@ -70,21 +70,18 @@ const htmlBunde = async() => {
     let readHTML = await readFile(readTemplate, 'utf-8');
     const readAllTemplates = await readdir(components);
     const cleanArray = await clearFileExt(readAllTemplates);
-    const result = await Promise.all(cleanArray.map(async(data) => {
-      try {
-        let getTemplate;
-        const createPath = path.join(components, data);
-        const sliceVariable = new RegExp(`{{${data.slice(0, -5)}}}`);
-        const createRegex = readHTML.match(sliceVariable);
-        getTemplate = await readFile(createPath, 'utf-8');
-        readHTML = readHTML.replace(createRegex[0], getTemplate);
-        return readHTML;
-      } catch (err) {
-        stdout.write(err);
-      }
-    }));
+    let result;
+    for (const data of cleanArray) {
+      let getTemplate;
+      const createPath = path.join(components, data);
+      const sliceVariable = new RegExp(`{{${data.slice(0, -5)}}}`);
+      const createRegex = readHTML.match(sliceVariable);
+      getTemplate = await readFile(createPath, 'utf-8');
+      readHTML = readHTML.replace(createRegex[0], getTemplate);
+      result = readHTML;
+    }
     const pathHTML = path.join(pathDist, 'index.html');
-    appendFile(pathHTML, result[result.length - 1]);
+    await appendFile(pathHTML, result);
   } catch(err) {
     stdout.write(err);
   }
