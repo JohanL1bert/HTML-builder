@@ -76,9 +76,11 @@ const htmlBunde = async() => {
       const createPath = path.join(components, data);
       const sliceVariable = new RegExp(`{{${data.slice(0, -5)}}}`);
       const createRegex = readHTML.match(sliceVariable);
-      getTemplate = await readFile(createPath, 'utf-8');
-      readHTML = readHTML.replace(createRegex[0], getTemplate);
-      result = readHTML;
+      if (createRegex) {
+        getTemplate = await readFile(createPath, 'utf-8');
+        readHTML = readHTML.replace(createRegex[0], getTemplate);
+        result = readHTML;
+      }
     }
     const pathHTML = path.join(pathDist, 'index.html');
     await appendFile(pathHTML, result);
