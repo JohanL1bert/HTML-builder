@@ -78,7 +78,7 @@ const htmlBunde = async() => {
       const createRegex = readHTML.match(sliceVariable);
       if (createRegex) {
         getTemplate = await readFile(createPath, 'utf-8');
-        readHTML = readHTML.replace(createRegex[0], getTemplate);
+        readHTML = readHTML.replaceAll(createRegex[0], getTemplate);
         result = readHTML;
       }
     }
